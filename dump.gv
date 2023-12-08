@@ -1,0 +1,84 @@
+digraph structs {
+    node [color=black, shape=box, style="rounded, filled"];
+    rankdir=LR;
+    head [fillcolor="#1CD3A2",     label="HEAD = 5"];
+    tail  [fillcolor="#FF7538",     label="TAIL = 11"];
+    free  [fillcolor="#42AAFF",     label="FREE = 4"];
+    sorted [fillcolor="#5035DE",    label="SORTED = 1"];
+    size   [fillcolor="#5035DE",    label="SIZE = 7"];
+    node [color=black, shape=record, style="rounded, filled"];
+
+    edge [style=invis, constraint=true];
+    node0 [fillcolor="#5035DE",label=" 0 | { <p> 0 | 0 | <n> 0}"];
+    node1 [fillcolor="#42AAFF",label=" 1 | { <p> -1 | 2003 | <n> 12}"];
+    node0 -> node1;
+    node2 [fillcolor="#42AAFF",label=" 2 | { <p> -1 | 2003 | <n> 1}"];
+    node1 -> node2;
+    node3 [fillcolor="#42AAFF",label=" 3 | { <p> -1 | 2003 | <n> 2}"];
+    node2 -> node3;
+    node4 [fillcolor="#42AAFF",label=" 4 | { <p> -1 | 2003 | <n> 3}"];
+    node3 -> node4;
+    node5 [fillcolor="#1CD3A2",label=" 5 | { <p> 0 | 5 | <n> 6}"];
+    node4 -> node5;
+    node6 [fillcolor="#E6A8D7",label=" 6 | { <p> 5 | 6 | <n> 7}"];
+    node5 -> node6;
+    node7 [fillcolor="#E6A8D7",label=" 7 | { <p> 6 | 7 | <n> 8}"];
+    node6 -> node7;
+    node8 [fillcolor="#E6A8D7",label=" 8 | { <p> 7 | 8 | <n> 9}"];
+    node7 -> node8;
+    node9 [fillcolor="#E6A8D7",label=" 9 | { <p> 8 | 9 | <n> 10}"];
+    node8 -> node9;
+    node10 [fillcolor="#E6A8D7",label=" 10 | { <p> 9 | 10 | <n> 11}"];
+    node9 -> node10;
+    node11 [fillcolor="#FF7538",label=" 11 | { <p> 10 | 11 | <n> 0}"];
+    node10 -> node11;
+    node12 [fillcolor="#42AAFF",label=" 12 | { <p> -1 | 2003 | <n> 13}"];
+    node11 -> node12;
+    node13 [fillcolor="#42AAFF",label=" 13 | { <p> -1 | 2003 | <n> 14}"];
+    node12 -> node13;
+    node14 [fillcolor="#42AAFF",label=" 14 | { <p> -1 | 2003 | <n> 15}"];
+    node13 -> node14;
+    node15 [fillcolor="#42AAFF",label=" 15 | { <p> -1 | 2003 | <n> 16}"];
+    node14 -> node15;
+
+    edge [style=solid, constraint=false];
+    node1: <n> -> node12;
+
+    node2: <n> -> node1;
+
+    node3: <n> -> node2;
+
+    node4: <n> -> node3;
+
+    node5: <n> -> node6;
+
+    node6: <n> -> node7;
+    node6: <p> -> node5;
+
+    node7: <n> -> node8;
+    node7: <p> -> node6;
+
+    node8: <n> -> node9;
+    node8: <p> -> node7;
+
+    node9: <n> -> node10;
+    node9: <p> -> node8;
+
+    node10: <n> -> node11;
+    node10: <p> -> node9;
+
+    node11: <p> -> node10;
+
+    node12: <n> -> node13;
+
+    node13: <n> -> node14;
+
+    node14: <n> -> node15;
+
+
+
+    edge [style=bold, constraint=false];
+    head -> node5; 
+    tail  -> node11; 
+    free  -> node4; 
+}
