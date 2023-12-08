@@ -15,13 +15,6 @@ int test( List* list )
 
         else return list->errors;
     
-    //printf( "%d ",list->size );
-    /*list->data[2].val = 2003;
-    list->data[2].prev = -1;
-    list->data[2].next = 0;
-    list->free = 2;*/
-    //print( list );
-    
     list->errors = ListVerify( list );
 
     if( list->errors == NoErrors )

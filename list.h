@@ -45,7 +45,6 @@ int ListVerify( List* list );
 void ListLinearize( List* list );
 int ListDump(List *list);
 
-void print( List* list );
 
 typedef enum Status
 {

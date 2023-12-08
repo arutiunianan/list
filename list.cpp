@@ -633,17 +633,6 @@ void ListLinearize( List* list )
     list->data = new_data;
 }
 
-void print( List* list )
-{
-    printf("qqqqqq");
-    for( int i = 0; i < list->size; i++ )
-    {
-        printf( "(%d, %d) ", i,list->data[i].val );
-    }
-    printf( "(%d, %d) ", 9,list->data[9].val );
-    printf("\n");
-}
-
 static const char *ColorPicker( List *list, int index)
 {
     const char *colors[] =
