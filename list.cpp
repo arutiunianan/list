@@ -1,8 +1,8 @@
 #include "list.h"
 
-#define PREV( index ) list->data[index].prev;
-#define NEXT( index ) list->data[index].next;
-#define VAL( index ) list->data[index].val;
+#define PREV( index ) list->data[index].prev
+#define NEXT( index ) list->data[index].next
+#define VAL( index ) list->data[index].val
 
 
 static Elem* ListResize( List *list, Resize mode )
@@ -29,12 +29,12 @@ static Elem* ListResize( List *list, Resize mode )
         while( new_data[elem].next != 0 )
         {
 
-            elem = list->data[elem].next;
+            elem =  NEXT( elem );
         }
         if( elem == list->free )
             list->free = new_free;
         else
-            new_data[elem].next = new_free;
+             NEXT( elem ) = new_free;
 
         for( int i = new_free; i < new_free + list->capacity; i++ )
         {
@@ -74,19 +74,19 @@ static Elem* ListResize( List *list, Resize mode )
         for( int i = new_capacity; i >= 1; i-- )
         {
 
-            if( list->data[i].prev == FREE_INDEX )
+            if( PREV( i ) == FREE_INDEX )
             {
 
                 if( list->free == 0 )
                 {
 
                     list->free = i;
-                    list->data[i].next = 0;
+                     NEXT( i )= 0;
                 }
                 else
                 {
 
-                    list->data[i].next = list->free;
+                    NEXT( i ) = list->free;
                     list->free = i;
                 }
             }
@@ -135,9 +135,9 @@ void ListCtor( List* list, int capacity )
 
     for ( int i = 1; i < capacity + 1; i++ )
     {
-        list->data[i].next  = i + 1;
-        list->data[i].prev  = FREE_INDEX;
-        list->data[i].val = DEAD_VALUE;
+        NEXT( i )  = i + 1;
+        PREV( i )  = FREE_INDEX;
+        VAL( i ) = DEAD_VALUE;
     }
 }
 
@@ -149,9 +149,9 @@ void ListDtor( List *list )
         for ( int i = 0; i < list->capacity + 1; ++i )
         {
 
-            list->data[i].next = 0xDED2410;
-            list->data[i].prev = 0xDED2410;
-            list->data[i].val = DEAD_VALUE;
+            NEXT( i ) = 0xDED2410;
+            PREV( i ) = 0xDED2410;
+            VAL( i ) = DEAD_VALUE;
         }  
 
     free(list->data);
@@ -200,39 +200,39 @@ void ListInsertAfter ( List* list, int index, int value )
     }
     assert(list->free != 0);
 
-    if( list->head == index && list->head == list->tail && list->data[list->head].prev == FREE_INDEX )
+    if( list->head == index && list->head == list->tail && PREV( list->head ) == FREE_INDEX )
     {
         assert( list->free == list->tail );
 
-        list->free = list->data[list->free].next;
+        list->free = NEXT( list->free );
 
-        list->data[list->tail].val = value;
-        list->data[list->tail].next  = 0;
-        list->data[list->tail].prev  = 0;
+        VAL( list->tail ) = value;
+        NEXT( list->tail )  = 0;
+        PREV( list->tail )  = 0;
     }
     else if( index == list->tail )
     {
         
-        list->data[list->free].prev  = list->tail;
-        list->data[list->free].val = value;
+        PREV( list->free )  = list->tail;
+        VAL( list->free ) = value;
 
         int index_new = list->free;
-        list->data[list->tail].next  = index_new;
+        NEXT( list->tail )  = index_new;
         list->tail = index_new;
-        list->free = list->data[index_new].next;
-        list->data[index_new].next = 0;
+        list->free = NEXT( index_new );
+        NEXT( index_new ) = 0;
     }
     else
     {
 
-        int new_free = list->data[list->free].next;
+        int new_free = NEXT( list->free );
 
-        list->data[list->free].next = list->data[index].next;
-        list->data[list->free].prev = index;
-        list->data[list->free].val = value;
+        NEXT( list->free ) = NEXT( index );
+        PREV( list->free ) = index;
+        VAL( list->free ) = value;
         
-        list->data[list->data[list->free].prev].next = list->free;
-        list->data[list->data[list->free].next].prev = list->free;
+        NEXT( PREV( list->free ) ) = list->free;
+        PREV( NEXT( list->free ) ) = list->free;
 
         list->free = new_free;
         
@@ -254,7 +254,7 @@ void ListInsertBefore( List* list, int index, int value )
         || 
         index > list->capacity 
         ||
-        list->data[index].prev == FREE_INDEX && ( list->size != 0 || index != list->tail ) )
+        PREV( index ) == FREE_INDEX && ( list->size != 0 || index != list->tail ) )
     {
 
         list->errors = InsertIndexError;
@@ -280,12 +280,12 @@ void ListInsertBefore( List* list, int index, int value )
     if( index == list->head )
     {
 
-        int new_free = list->data[list->free].next;
+        int new_free = NEXT( list->free );
 
-        list->data[list->head].prev = list->free;
-        list->data[list->free].next  = list->head;
-        list->data[list->free].prev  = 0;
-        list->data[list->free].val = value;
+        PREV( list->head ) = list->free;
+        NEXT( list->free )  = list->head;
+        PREV( list->free )  = 0;
+        VAL( list->free ) = value;
         list->head = list->free;
         list->free = new_free;
 
@@ -293,7 +293,7 @@ void ListInsertBefore( List* list, int index, int value )
     }
     else
     {
-        return ListInsertAfter(list, list->data[index].prev, value);
+        return ListInsertAfter(list, PREV( index ), value);
     }
 
     list->errors = ListVerify(list);
@@ -317,7 +317,7 @@ int ListRemove( List* list, int index )
     if( list->errors != NoErrors )
         return DEAD_VALUE;
     
-    if( index == 0 || index > list->capacity + 1 || list->data[index].prev == FREE_INDEX )
+    if( index == 0 || index > list->capacity + 1 || PREV( index ) == FREE_INDEX )
         return DEAD_VALUE;
     
     list->size--;
@@ -327,7 +327,7 @@ int ListRemove( List* list, int index )
     if( index == list->head )
     {
         if( index == list->tail )
-            if( list->data[index].prev == FREE_INDEX )
+            if( PREV( index ) == FREE_INDEX )
             {
 
                 assert(++list->size == 0);
@@ -336,24 +336,24 @@ int ListRemove( List* list, int index )
             else
             {
 
-                value = list->data[index].val;
+                value = VAL( index );
                 
-                list->data[index].prev  = FREE_INDEX;
-                list->data[index].next  = list->free;
-                list->data[index].val = DEAD_VALUE;
+                PREV( index )  = FREE_INDEX;
+                NEXT( index )  = list->free;
+                VAL( index ) = DEAD_VALUE;
 
                 list->free = index;
             }
         else
         {
-            value = list->data[list->head].val;
-            int new_head = list->data[list->head].next;
+            value = VAL( list->head );
+            int new_head = NEXT( list->head );
 
-            list->data[new_head].prev  = 0;
+            PREV( new_head )  = 0;
                 
-            list->data[list->head].prev  = FREE_INDEX;
-            list->data[list->head].next  = list->free;
-            list->data[list->head].val = DEAD_VALUE;
+            PREV( list->head )  = FREE_INDEX;
+            NEXT( list->head )  = list->free;
+            VAL( list->head ) = DEAD_VALUE;
             list->free  = list->head;
 
             list->head = new_head;
@@ -361,15 +361,15 @@ int ListRemove( List* list, int index )
     }
     else if( index == list->tail )
     {
-        value = list->data[list->tail].val;
+        value = VAL( list->tail );
 
-        int new_tail = list->data[list->tail].prev;
+        int new_tail = PREV( list->tail );
 
-        list->data[new_tail].next = 0;
+        NEXT( new_tail ) = 0;
         
-        list->data[list->tail].prev  = FREE_INDEX;
-        list->data[list->tail].next  = list->free;
-        list->data[list->tail].val = DEAD_VALUE;
+        PREV( list->tail )  = FREE_INDEX;
+        NEXT( list->tail )  = list->free;
+        VAL( list->tail ) = DEAD_VALUE;
         list->free = list->tail;
 
         list->tail = new_tail;
@@ -377,19 +377,19 @@ int ListRemove( List* list, int index )
     else
     {
 
-        int next = list->data[index].next;
-        int prev = list->data[index].prev;
+        int next = NEXT( index );
+        int prev = PREV( index );
     
-        value = list->data[index].val;
+        value = VAL( index );
 
-        list->data[index].prev  = FREE_INDEX;
-        list->data[index].next  = list->free;
-        list->data[index].val = DEAD_VALUE;
+        PREV( index )  = FREE_INDEX;
+        NEXT( index )  = list->free;
+        VAL( index ) = DEAD_VALUE;
 
         list->free = index;
 
-        list->data[next].prev = prev;
-        list->data[prev].next = next;
+        PREV( next ) = prev;
+        NEXT( prev ) = next;
     }
 
     if (list->size <= list->capacity / 4)
@@ -427,8 +427,8 @@ int ListValueIndex(List* list, int value)
         return FREE_INDEX;
     
     int elem = FREE_INDEX;
-    while( elem != FREE_INDEX && list->data[elem].val != value )
-        elem = list->data[elem].next;
+    while( elem != FREE_INDEX && VAL( elem ) != value )
+        elem = NEXT( elem );
     
     return elem;
 }
@@ -453,7 +453,7 @@ int ListVerify( List* list )
     if( list->free   > list->capacity ) 
         error |= FreeBiggerThanCapasity;
 
-    if( list->data[0].next  != 0 || list->data[0].prev  != 0 || list->data[0].val != 0 )
+    if( NEXT( 0 )  != 0 || PREV( 0 )  != 0 || VAL( 0 ) != 0 )
         error |= ZeroIndexError;
     
     if( list->sorted > 1 )
@@ -464,16 +464,16 @@ int ListVerify( List* list )
 
     if( list->tail == list->head )
     {   
-        if( !( list->data[list->head].next == 0 && list->data[list->head].prev == 0 && list->size == 1
+        if( !( NEXT( list->head ) == 0 && PREV( list->head ) == 0 && list->size == 1
               ||
-              list->data[list->head].prev == FREE_INDEX && list->data[list->head].val == DEAD_VALUE && list->size == 0 ) )
+              PREV( list->head ) == FREE_INDEX && VAL( list->head ) == DEAD_VALUE && list->size == 0 ) )
             error |= DataError;
         
         for( int i = 1; i <= list->capacity; i++ )
         {
             if( i != list->head )
             {
-                if( list->data[i].val != DEAD_VALUE || list->data[i].prev != FREE_INDEX )
+                if( VAL( i ) != DEAD_VALUE || PREV( i ) != FREE_INDEX )
                 {
                     error |= DataError;
                     break;
@@ -486,10 +486,10 @@ int ListVerify( List* list )
         return ( Status ) error;
     
     
-    if( list->head != list->tail && list->data[list->head].prev != 0 )
+    if( list->head != list->tail && PREV( list->head ) != 0 )
         error |= HeadError;
     
-    if( list->head != list->tail && list->data[list->tail].next != 0 )
+    if( list->head != list->tail && NEXT( list->tail ) != 0 )
         error |= TailError;
 
     if( error != NoErrors )
@@ -498,11 +498,11 @@ int ListVerify( List* list )
     for( int i = 1; i <= list->capacity; i++ )
     {
 
-        if( list->data[i].next  >  list->capacity && i != list->capacity
+        if( NEXT( i )  >  list->capacity && i != list->capacity
             ||
-            ( list->data[i].prev  >  list->capacity && list->data[i].prev  != FREE_INDEX )
+            ( PREV( i )  >  list->capacity && PREV( i )  != FREE_INDEX )
             || 
-            ( list->data[i].prev  == FREE_INDEX && list->data[i].val != DEAD_VALUE ) )
+            ( PREV( i )  == FREE_INDEX && VAL( i ) != DEAD_VALUE ) )
         {
             
             error |= IndexesError;
@@ -518,7 +518,7 @@ int ListVerify( List* list )
     
     while( list->head != list->tail && size < list->capacity )
     {
-        if( list->data[place].next == 0 )
+        if( NEXT( place ) == 0 )
         {
 
             if( place != list->tail )
@@ -526,20 +526,20 @@ int ListVerify( List* list )
             size++;
             break;
         }
-        else if( list->data[list->data[place].next].prev != place
+        else if( PREV( NEXT( place ) ) != place
             ||
-            list->data[place].prev != 0 && list->data[list->data[place].prev].next != place )
+            PREV( place ) != 0 && NEXT( PREV( place ) ) != place )
         {
 
             error |= DataError;
             break;
         }
 
-        place = list->data[place].next;
+        place = NEXT( place );
         size++;
     }
 
-    if( list->head == list->tail && list->data[list->head].prev != FREE_INDEX )
+    if( list->head == list->tail && PREV( list->head ) != FREE_INDEX )
         size++;
 
     place = list->free;
@@ -547,26 +547,26 @@ int ListVerify( List* list )
     while( size < list->capacity && place != 0 && place < list->capacity )
     {
 
-        if( list->data[place].next == 0 )
+        if( NEXT( place ) == 0 )
         {
 
-            if( list->data[place].prev  != FREE_INDEX 
+            if( PREV( place ) != FREE_INDEX 
                 ||
-                list->data[place].val != DEAD_VALUE )
+                VAL( place ) != DEAD_VALUE )
                 error |= DataError;
             size++;
             break;
         }
-        else if( list->data[place].prev  != FREE_INDEX 
+        else if( PREV( place )  != FREE_INDEX 
                  ||
-                 list->data[place].val != DEAD_VALUE )
+                 VAL( place ) != DEAD_VALUE )
         {
 
             error |= DataError;
             break;
         }
         
-        place = list->data[place].next;
+        place = NEXT( place );
         size++;
     }
     
@@ -579,7 +579,7 @@ void ListLinearize( List* list )
     if( list->errors != NoErrors)
         return;
 
-    if( list->sorted == 1 && list->data[1].prev != FREE_INDEX )
+    if( list->sorted == 1 && PREV( 1 ) != FREE_INDEX )
     {
 
         list->errors = NoErrors;
@@ -609,7 +609,7 @@ void ListLinearize( List* list )
         {
             new_data[i].prev  = (i == 1 ? 0 : i - 1);
             new_data[i].next  = ( i == list->size ? 0 : i + 1);
-            new_data[i].val = list->data[cur_ptr].val;
+            new_data[i].val = VAL( cur_ptr );
         }
         else
         {
@@ -622,7 +622,7 @@ void ListLinearize( List* list )
             new_data[i].val = DEAD_VALUE;
         }
 
-        cur_ptr = list->data[cur_ptr].next;
+        cur_ptr = NEXT( cur_ptr );
     }
 
     free(list->data);
@@ -649,7 +649,7 @@ static const char *ColorPicker( List *list, int index)
     if ( ListVerify(list) )
         return colors[6];
 
-    if (index <= list->capacity + 1 && list->data[index].prev == FREE_INDEX)
+    if (index <= list->capacity + 1 && PREV( index ) == FREE_INDEX)
         return colors[1];
     else
     if (index == 0)
@@ -711,8 +711,8 @@ int ListDump(List *list)
         fprintf( dump_file, "    node%lu [fillcolor=\"%s\","
                 "label=\" %lu | { <p> %d | %d | <n> %lu}\"];\n",
                 index, ColorPicker(list, index), index,
-                (list->data[index].prev == FREE_INDEX) ? -1 : list->data[index].prev,
-                list->data[index].val, list->data[index].next );
+                (PREV( index ) == FREE_INDEX) ? -1 : PREV( index ),
+                VAL( index ), NEXT( index ) );
         
         if ( index > 0 ) fprintf( dump_file, "    node%lu -> node%lu;\n", index - 1, index );
     }
@@ -721,10 +721,10 @@ int ListDump(List *list)
 
     for ( size_t index = 1; index <= list->capacity; ++index )
     {
-        if ( list->data[index].next != 0 )
-            fprintf(dump_file, "    node%lu: <n> -> node%lu;\n", index, list->data[index].next);
-        if ( list->data[index].prev != FREE_INDEX && list->data[index].prev != 0 )
-            fprintf(dump_file, "    node%lu: <p> -> node%lu;\n", index, list->data[index].prev);
+        if ( NEXT( index ) != 0 )
+            fprintf(dump_file, "    node%lu: <n> -> node%lu;\n", index, NEXT( index ));
+        if ( PREV( index ) != FREE_INDEX && PREV( index ) != 0 )
+            fprintf(dump_file, "    node%lu: <p> -> node%lu;\n", index, PREV( index ));
         fputs( "\n", dump_file );
     }
 
